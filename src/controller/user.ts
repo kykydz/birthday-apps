@@ -18,10 +18,10 @@ export class UserController {
 		const result = await this.userService.create({
 			firstName: req.body.firstName,
 			lastName: req.body.lastName,
-			birthday: req.body.birthday,
+			birthdate: req.body.birthdate,
 			location: req.body.location,
 		});
-		return res.status(200).json(req.body);
+		return res.status(200).json(result);
 	}
 
 	async delete(req: Request, res: Response) {

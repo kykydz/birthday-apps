@@ -23,14 +23,10 @@ const setupRoutes = async (app: any) => {
 	const healthCheckController = new HealthCheckController();
 	const userController = new UserController(userService);
 
-	// app.use(requestLogger);
+	app.use(requestLogger);
 
 	app.use('/healthcheck', healthCheckController.router);
 	app.use('/api/user', userController.router);
-	// app.use('/tost', (req, res) => {
-	// 	console.log(req.body); // Log the request body
-	// 	res.send('Received');
-	// });
 
 	app.use('*', (_: Request, res: Response) => {
 		res.status(401).send('Unauthorized');
@@ -50,9 +46,6 @@ export const createApp = async () => {
 	});
 
 	await setupRoutes(app);
-
-	// Mount the router onto the app
-	// app.use('/', router);
 
 	return app;
 };
