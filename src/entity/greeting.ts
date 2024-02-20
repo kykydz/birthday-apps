@@ -9,6 +9,20 @@ import {
 	Index,
 } from 'typeorm';
 import { User } from './user';
+import { IsEnum } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export enum GreetingType {
+	BIRTHDAY = 'BIRTHDAY',
+	ANNIV = 'ANNIV',
+	MARRIED = 'MARRIED',
+}
+
+export enum GreetingStatus {
+	PROGRESS = 'PROGRESS',
+	SUCCESS = 'SUCCESS',
+	FAILED = 'FAILED',
+}
 
 @Entity()
 @Index(['user', 'greetingDate'], { unique: true })
@@ -20,28 +34,26 @@ export class Greeting {
 	@JoinColumn({ name: 'user_id' })
 	user: User;
 
-	@Column({ type: 'enum', enum: ['BIRTHDAY', 'ANNIV', 'MARRIED'] })
-	type: 'BIRTHDAY' | 'ANNIV' | 'MARRIED';
+	@Column()
+	@IsEnum(GreetingType)
+	@Type(() => String)
+	type: GreetingType;
 
 	@Column({ type: 'date' })
 	greetingDate: Date;
 
-	@Column({
-		type: 'enum',
-		enum: ['PROGRESS', 'SUCCESS', 'FAILED'],
-		default: 'PROGRESS',
-	})
-	status: 'PROGRESS' | 'SUCCESS' | 'FAILED';
+	@Column()
+	@IsEnum(GreetingStatus)
+	@Type(() => String)
+	status: GreetingStatus;
 
-	@CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+	@CreateDateColumn({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
 	created: Date;
 
 	@UpdateDateColumn({
-		type: 'timestamp',
+		type: 'datetime',
 		default: () => 'CURRENT_TIMESTAMP',
 		onUpdate: 'CURRENT_TIMESTAMP',
 	})
 	updated: Date;
-
-	// Other columns and methods...
 }
