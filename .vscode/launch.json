@@ -26,5 +26,27 @@
             },
             "envFile": "${workspaceFolder}/.env"
         },
+        {
+            "nodeVersionHint": 16,
+            "name": "Debug Cron - Send Birthday Email",
+            "type": "node",
+            "request": "launch",
+            "args": [
+                "${workspaceRoot}/src/cron/index.ts"
+            ],
+            "runtimeArgs": [
+                "--nolazy",
+                "-r",
+                "ts-node/register"
+            ],
+            "cwd": "${workspaceRoot}",
+            "protocol": "inspector",
+            "internalConsoleOptions": "openOnSessionStart",
+            "outputCapture": "std",
+            "env": {
+                "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json"
+            },
+            "envFile": "${workspaceFolder}/.env"
+        },
     ]
 }
