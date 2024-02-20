@@ -1,6 +1,9 @@
+import { UserCreationSchema } from '../schema/user';
 import { UserService } from '../service/user';
 
 import { Request, Response, Router } from 'express';
+
+import { ValidationResult } from 'joi';
 
 export class UserController {
 	protected userService: UserService;
@@ -15,13 +18,18 @@ export class UserController {
 	}
 
 	async create(req: Request, res: Response) {
-		const result = await this.userService.create({
-			firstName: req.body.firstName,
-			lastName: req.body.lastName,
-			birthday: req.body.birthday,
-			location: req.body.location,
-		});
-		return res.status(200).json(req.body);
+		const validatedUserCreation: ValidationResult = UserCreationSchema.validate(
+			req.body
+		);
+		if (validatedUserCreation.error) {
+			return res.status(404).send({
+				message: 'Bad request',
+				last_error: validatedUserCreation.error.details,
+			});
+		}
+
+		const result = await this.userService.create(validatedUserCreation.value);
+		return res.status(200).json(result);
 	}
 
 	async delete(req: Request, res: Response) {

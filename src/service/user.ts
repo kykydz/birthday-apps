@@ -11,7 +11,7 @@ export class UserService {
 	}
 
 	async create(data: any) {
-		const userData: User = {
+		const userData = {
 			id: String(uuid()),
 			birthdate: data.birthdate,
 			first_name: data.firstName,
