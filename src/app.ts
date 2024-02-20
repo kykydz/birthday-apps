@@ -2,6 +2,7 @@ import { UserController } from './controller/user';
 import 'reflect-metadata';
 
 import express, { Request, Response, Router } from 'express';
+
 import bodyParser from 'body-parser';
 import { UserRepository } from './repository/user';
 import { UserService } from './service/user';
@@ -23,14 +24,10 @@ const setupRoutes = async (app: any) => {
 	const healthCheckController = new HealthCheckController();
 	const userController = new UserController(userService);
 
-	// app.use(requestLogger);
+	app.use(requestLogger);
 
 	app.use('/healthcheck', healthCheckController.router);
 	app.use('/api/user', userController.router);
-	// app.use('/tost', (req, res) => {
-	// 	console.log(req.body); // Log the request body
-	// 	res.send('Received');
-	// });
 
 	app.use('*', (_: Request, res: Response) => {
 		res.status(401).send('Unauthorized');
@@ -39,20 +36,11 @@ const setupRoutes = async (app: any) => {
 
 export const createApp = async () => {
 	const app = express();
-	const router = express.Router();
 
 	app.use(bodyParser.urlencoded({ extended: false }));
 	app.use(bodyParser.json());
 
-	app.use('/test', (req, res) => {
-		console.log(req.body); // Log the request body
-		res.send(req.body);
-	});
-
 	await setupRoutes(app);
-
-	// Mount the router onto the app
-	// app.use('/', router);
 
 	return app;
 };

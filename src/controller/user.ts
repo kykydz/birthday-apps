@@ -1,3 +1,4 @@
+import { timezoneGenerator } from '../middleware/timezone';
 import { UserCreationSchema } from '../schema/user';
 import { UserService } from '../service/user';
 
@@ -13,7 +14,7 @@ export class UserController {
 		this.userService = userService;
 
 		this.router = Router();
-		this.router.post('/create', this.create.bind(this));
+		this.router.post('/create', timezoneGenerator, this.create.bind(this));
 		this.router.post('/delete', this.delete.bind(this));
 	}
 
@@ -28,7 +29,11 @@ export class UserController {
 			});
 		}
 
-		const result = await this.userService.create(validatedUserCreation.value);
+		const result = await this.userService.create({
+			...validatedUserCreation.value,
+			timeZoneName: req.timeZone.name,
+			tzOffset: req.timeZone.offset,
+		});
 		return res.status(200).json(result);
 	}
 

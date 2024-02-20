@@ -24,6 +24,12 @@ export class User {
 	birthdate: Date;
 
 	@Column()
+	time_zone_name: string;
+
+	@Column()
+	tz_offset: Number;
+
+	@Column()
 	location: string;
 
 	@CreateDateColumn({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
