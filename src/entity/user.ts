@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+	Entity,
+	PrimaryGeneratedColumn,
+	Column,
+	CreateDateColumn,
+	UpdateDateColumn,
+	OneToMany,
+} from 'typeorm';
+import { uuid } from 'uuidv4';
+import { Greeting } from './greeting';
 
 @Entity()
 export class User {
@@ -11,17 +20,28 @@ export class User {
 	@Column()
 	last_name: string;
 
-	@Column({ type: 'date' })
+	@Column({ type: 'datetime' })
 	birthdate: Date;
+
+	@Column()
+	time_zone_name: string;
+
+	@Column()
+	tz_offset: Number;
 
 	@Column()
 	location: string;
 
-	constructor(id: string, name: string, birthdate: Date, location: string) {
-		this.id = id;
-		this.first_name = name;
-		this.last_name = name;
-		this.birthdate = birthdate;
-		this.location = location;
-	}
+	@CreateDateColumn({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+	created: Date;
+
+	@UpdateDateColumn({
+		type: 'datetime',
+		default: () => 'CURRENT_TIMESTAMP',
+		onUpdate: 'CURRENT_TIMESTAMP',
+	})
+	updated: Date;
+
+	@OneToMany(() => Greeting, (greeting) => greeting.user)
+	greetings: Greeting[];
 }

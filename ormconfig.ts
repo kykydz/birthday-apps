@@ -1,13 +1,12 @@
 import { SqliteConnectionOptions } from 'typeorm/driver/sqlite/SqliteConnectionOptions';
-import { User } from '../../entity/user';
-import { Greeting } from '../../entity/greeting';
+import { User } from './src/entity/user';
 
 export const sqliteOptions: SqliteConnectionOptions = {
 	type: 'sqlite',
 	database: 'database.sqlite',
 	synchronize: true,
 	logging: true,
-	entities: [User, Greeting],
+	entities: [User],
 	migrationsTableName: 'migration_record',
 	migrations: ['../../migration/**/*.ts'],
 };

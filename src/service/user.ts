@@ -11,12 +11,14 @@ export class UserService {
 	}
 
 	async create(data: any) {
-		const userData: User = {
+		const userData = {
 			id: String(uuid()),
 			birthdate: data.birthdate,
 			first_name: data.firstName,
 			last_name: data.lastName,
 			location: data.location,
+			time_zone_name: data.timeZoneName,
+			tz_offset: data.tzOffset,
 		};
 
 		const result = await this.repository.save(userData);

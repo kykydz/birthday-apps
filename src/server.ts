@@ -1,3 +1,14 @@
+declare global {
+	namespace Express {
+		interface Request {
+			timeZone?: {
+				name: String;
+				offset: Number;
+			};
+		}
+	}
+}
+
 import { createApp } from './app';
 import { SERVER_PORT, ENV } from './config/environment';
 import { Logger } from '../src/utils/logger';

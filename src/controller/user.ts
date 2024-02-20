@@ -1,6 +1,10 @@
+import { timezoneGenerator } from '../middleware/timezone';
+import { UserCreationSchema } from '../schema/user';
 import { UserService } from '../service/user';
 
 import { Request, Response, Router } from 'express';
+
+import { ValidationResult } from 'joi';
 
 export class UserController {
 	protected userService: UserService;
@@ -10,16 +14,25 @@ export class UserController {
 		this.userService = userService;
 
 		this.router = Router();
-		this.router.post('/create', this.create.bind(this));
+		this.router.post('/create', timezoneGenerator, this.create.bind(this));
 		this.router.post('/delete', this.delete.bind(this));
 	}
 
 	async create(req: Request, res: Response) {
+		const validatedUserCreation: ValidationResult = UserCreationSchema.validate(
+			req.body
+		);
+		if (validatedUserCreation.error) {
+			return res.status(404).send({
+				message: 'Bad request',
+				last_error: validatedUserCreation.error.details,
+			});
+		}
+
 		const result = await this.userService.create({
-			firstName: req.body.firstName,
-			lastName: req.body.lastName,
-			birthdate: req.body.birthdate,
-			location: req.body.location,
+			...validatedUserCreation.value,
+			timeZoneName: req.timeZone.name,
+			tzOffset: req.timeZone.offset,
 		});
 		return res.status(200).json(result);
 	}
