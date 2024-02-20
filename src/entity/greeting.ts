@@ -56,4 +56,7 @@ export class Greeting {
 		onUpdate: 'CURRENT_TIMESTAMP',
 	})
 	updated: Date;
+
+	@Column()
+	raw_response: String;
 }

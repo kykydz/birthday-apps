@@ -40,6 +40,19 @@ export class BaseRepository<T extends Record<string, any>>
 		}
 	}
 
+	async update(
+		query: FindOptionsWhere<T>,
+		data: Partial<T>
+	): Promise<DeleteResult> {
+		try {
+			const result = await this.repository.update(query, data);
+			return result;
+		} catch (error) {
+			this.logger.error('Failed to delete entity', query, error);
+			throw new Error('Failed to delete entity');
+		}
+	}
+
 	async delete(query: FindOptionsWhere<T>): Promise<DeleteResult> {
 		try {
 			const result = await this.repository.delete(query);
