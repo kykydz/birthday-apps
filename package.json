@@ -24,9 +24,8 @@
 	"version": "1.0.0",
 	"main": "index.js",
 	"scripts": {
-		"migration": "typeorm migration:create \"./src/migration/\" -- -n",
-		"migration2": "typeorm migration:create \"./src/migration/\" -- -n",
-		"typeorm": "typeorm-ts-node-commonjs"
+		"server": "ts-node --inspect=0.0.0.0:9229 src/server.ts",
+		"birthday-cron": "ts-node src/cron/index.ts"
 	},
 	"author": "",
 	"license": "ISC",

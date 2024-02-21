@@ -3,6 +3,11 @@ import { UserRepository } from '../repository/user';
 import { GreetingRepository } from '../repository/greeting';
 import axios from 'axios';
 import { GreetingStatus, GreetingType } from '../entity/greeting';
+import { FindOptionsWhere } from 'typeorm';
+
+const DEFAULT_SENDING_GREETING_HOUR = 13;
+
+type CustomFindOptionsWhere<T> = FindOptionsWhere<T> & { where: any };
 
 export class Greeting {
 	protected userRepository: UserRepository;
@@ -16,14 +21,17 @@ export class Greeting {
 		this.greetingRepository = greetingRepository;
 	}
 
-	async birthdayEmail() {
+	public async birthdayEmail() {
 		const sendBulkPromise = [];
 
 		const users = await this.userRepository.getAll();
 
 		for (let i = 0; i < users.length; i++) {
-			if (this._isSendBirthday(users[i])) {
-				sendBulkPromise.push(this._sendMail(users[i]));
+			const { userTimezoneDate, sendGreeting } = this._calculateUserTimeZone(
+				users[i]
+			);
+			if (sendGreeting) {
+				sendBulkPromise.push(this._sendMail(users[i], userTimezoneDate));
 			}
 		}
 
@@ -38,12 +46,16 @@ export class Greeting {
 		return await Promise.all(sendBulkPromise);
 	}
 
-	_isSendBirthday(user: User): Boolean {
+	public async selfCheckPendingFailGreeting() {}
+
+	private _calculateUserTimeZone(user: User): any {
 		const now = new Date(); // Get the current date/time in local timezone
 		const utc = now.getTime() + now.getTimezoneOffset() * 60000; // Convert to UTC
 
 		// user current time
-		const userTimezoneDate = new Date(utc - Number(user.tz_offset) * 60 * 60 * 1000);
+		const userTimezoneDate = new Date(
+			utc - Number(user.tz_offset) * 60 * 60 * 1000
+		);
 		const userDate = userTimezoneDate.getDate();
 		const userMonth = userTimezoneDate.getMonth();
 		const userHour = userTimezoneDate.getHours();
@@ -53,39 +65,58 @@ export class Greeting {
 
 		// check if this current date = user birtday
 		if (userMonth == userBirthMonth && userDate == userBirthDate) {
-			// for tolerance 2 minute
-			if (userHour == 10 && userMinute >= 0 && userMinute <= 20) {
-				return true;
+			// for tolerance 20 minute
+			if (
+				userHour == DEFAULT_SENDING_GREETING_HOUR &&
+				userMinute >= 0 &&
+				userMinute <= 59
+			) {
+				return {
+					userTimezoneDate,
+					sendGreeting: true,
+				};
 			} else {
-				return false;
+				return {
+					userTimezoneDate,
+					sendGreeting: false,
+				};
 			}
 		} else {
-			return false;
+			return {
+				userTimezoneDate,
+				sendGreeting: false,
+			};
 		}
 	}
 
-	_formatDate(date: Date) {
-		// Get current date
-		const currentDate = new Date(date);
-
-		// Get day, month, and year components
-		const day = currentDate.getDate().toString().padStart(2, '0'); // Ensure two digits with leading zero if necessary
-		const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based, so add 1
-		const year = currentDate.getFullYear();
-
-		// Format the date as "dd-mm-yyyy"
-		const formattedDate = `${year}-${month}-${day}`;
-
-		return formattedDate;
-	}
-
-	async _sendMail(user: User) {
-		const greeting = await this.greetingRepository.save({
-			user: user,
-			greetingDate: user.birthdate,
-			status: GreetingStatus.PROGRESS,
-			type: GreetingType.BIRTHDAY
+	private async _sendMail(user: User, userTimezoneDate: Date) {
+		let greeting = await this.greetingRepository.findOne({
+			where: {
+				user: {
+					id: user.id,
+				},
+			},
 		});
+
+		if (!greeting) {
+			greeting = await this.greetingRepository.save({
+				user: user,
+				year: userTimezoneDate.getFullYear(),
+				status: GreetingStatus.PROGRESS,
+				type: GreetingType.BIRTHDAY,
+			});
+		}
+
+		// if it found greeting already sent success this year => skip
+		// TODO: cover edge case during 31 December birthdate
+		const currentYear = new Date().getFullYear();
+		if (
+			greeting &&
+			greeting.year == currentYear &&
+			greeting.status == GreetingStatus.SUCCESS
+		) {
+			return;
+		}
 
 		try {
 			const result = await axios.post(

@@ -25,7 +25,7 @@ export enum GreetingStatus {
 }
 
 @Entity()
-@Index(['user', 'greetingDate'], { unique: true })
+@Index(['user', 'year'], { unique: true })
 export class Greeting {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
@@ -39,8 +39,9 @@ export class Greeting {
 	@Type(() => String)
 	type: GreetingType;
 
-	@Column({ type: 'date' })
-	greetingDate: Date;
+	@Column()
+	@Type(() => Number)
+	year: number;
 
 	@Column()
 	@IsEnum(GreetingStatus)

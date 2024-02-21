@@ -6,7 +6,7 @@ export const sqliteOptions: SqliteConnectionOptions = {
 	type: 'sqlite',
 	database: 'database.sqlite',
 	synchronize: true,
-	logging: true,
+	logging: false,
 	entities: [User, Greeting],
 	migrationsTableName: 'migration_record',
 	migrations: ['../../migration/**/*.ts'],

@@ -5,6 +5,8 @@ import {
 	FindOptionsWhere,
 	EntityTarget,
 	DataSource,
+	FindOptions,
+	FindOneOptions,
 } from 'typeorm';
 import { ILogger } from '../utils/logger';
 import { IBaseRepository } from './base.interface';
@@ -28,6 +30,10 @@ export class BaseRepository<T extends Record<string, any>>
 
 	async getAll(): Promise<T[]> {
 		return await this.repository.find({});
+	}
+
+	async findOne(query: FindOneOptions<T>): Promise<T> {
+		return await this.repository.findOne(query);
 	}
 
 	async save(data: DeepPartial<T>): Promise<T> {
