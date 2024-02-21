@@ -6,7 +6,7 @@ import { GreetingStatus, GreetingType } from '../entity/greeting';
 import { Not } from 'typeorm';
 import { ILogger } from '../utils/logger';
 
-const DEFAULT_SENDING_GREETING_HOUR = 13;
+const DEFAULT_SENDING_GREETING_HOUR = 9;
 
 export class GreetingService {
 	protected userRepository: UserRepository;
@@ -67,7 +67,7 @@ export class GreetingService {
 			if (
 				userHour == DEFAULT_SENDING_GREETING_HOUR &&
 				userMinute >= 0 &&
-				userMinute <= 59
+				userMinute <= 20
 			) {
 				return {
 					userTimezoneDate,
