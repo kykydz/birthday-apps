@@ -2,7 +2,7 @@ import { User } from '../entity/user';
 import { UserRepository } from '../repository/user';
 import { GreetingRepository } from '../repository/greeting';
 import axios from 'axios';
-import { GreetingStatus } from '../entity/greeting';
+import { GreetingStatus, GreetingType } from '../entity/greeting';
 
 export class Greeting {
 	protected userRepository: UserRepository;
@@ -40,36 +40,28 @@ export class Greeting {
 
 	_isSendBirthday(user: User): Boolean {
 		const now = new Date(); // Get the current date/time in local timezone
-		// const utc = now.getTime() + now.getTimezoneOffset() * 60000; // Convert to UTC
+		const utc = now.getTime() + now.getTimezoneOffset() * 60000; // Convert to UTC
 
-		// Create a new Date object with the timezone offset of the target timezone
-		// const dateInTimeZone = new Date(utc - 3600000 * Number(user.tz_offset));
-		// const hour = dateInTimeZone.getHours();
-		// const minute = dateInTimeZone.getMinutes();
+		// user current time
+		const userTimezoneDate = new Date(utc - Number(user.tz_offset) * 60 * 60 * 1000);
+		const userDate = userTimezoneDate.getDate();
+		const userMonth = userTimezoneDate.getMonth();
+		const userHour = userTimezoneDate.getHours();
+		const userMinute = userTimezoneDate.getMinutes();
+		const userBirthMonth = user.birthdate.getMonth();
+		const userBirthDate = user.birthdate.getDate();
 
-		// user date
-		const hoursToAdd = user.tz_offset;
-		// const userNowDate = now;
-		// userNowDate.setHours(user.birthdate.getHours() + Number(hoursToAdd));
-		// const userHour = userNowDate.getHours();
-		// const userMinute = userNowDate.getMinutes();
-
-		const timeZoneOffset = Number(hoursToAdd) * 3600 * 1000;
-
-		// Adjust date by adding timezone offset
-		const dateInTimeZone = new Date(now.getTime() + timeZoneOffset);
-
-		// check if this current date
-		// if (this._formatDate(now) == this._formatDate(userNowDate)) {
-		// 	// for tolerance 2 minute
-		// 	if (userHour === 9 && userMinute >= 0 && userMinute <= 2) {
-		// 		return true;
-		// 	} else {
-		// 		return false;
-		// 	}
-		// }
-		console.log('');
-		return true;
+		// check if this current date = user birtday
+		if (userMonth == userBirthMonth && userDate == userBirthDate) {
+			// for tolerance 2 minute
+			if (userHour == 10 && userMinute >= 0 && userMinute <= 20) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
 	}
 
 	_formatDate(date: Date) {
@@ -92,6 +84,7 @@ export class Greeting {
 			user: user,
 			greetingDate: user.birthdate,
 			status: GreetingStatus.PROGRESS,
+			type: GreetingType.BIRTHDAY
 		});
 
 		try {

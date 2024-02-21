@@ -57,6 +57,6 @@ export class Greeting {
 	})
 	updated: Date;
 
-	@Column()
-	raw_response: String;
+	@Column({ nullable: true })
+	raw_response?: string | null;
 }
