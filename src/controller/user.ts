@@ -16,6 +16,7 @@ export class UserController {
 		this.router = Router();
 		this.router.post('/create', timezoneGenerator, this.create.bind(this));
 		this.router.post('/delete', this.delete.bind(this));
+		this.router.patch('/put', this.patch.bind(this));
 	}
 
 	async create(req: Request, res: Response) {
@@ -33,6 +34,23 @@ export class UserController {
 			...validatedUserCreation.value,
 			timeZoneName: req.timeZone.name,
 			tzOffset: req.timeZone.offset,
+		});
+		return res.status(200).json(result);
+	}
+
+	async patch(req: Request, res: Response) {
+		const validatedUserCreation: ValidationResult = UserCreationSchema.validate(
+			req.body
+		);
+		if (validatedUserCreation.error) {
+			return res.status(404).send({
+				message: 'Bad request',
+				last_error: validatedUserCreation.error.details,
+			});
+		}
+
+		const result = await this.userService.update(req.query.user_id as string, {
+			...validatedUserCreation.value,
 		});
 		return res.status(200).json(result);
 	}
