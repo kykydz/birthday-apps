@@ -3,19 +3,20 @@ import { UserRepository } from '../repository/user';
 import { GreetingRepository } from '../repository/greeting';
 import axios from 'axios';
 import { GreetingStatus, GreetingType } from '../entity/greeting';
-import { FindOptionsWhere } from 'typeorm';
+import { Not } from 'typeorm';
+import { ILogger } from '../utils/logger';
 
 const DEFAULT_SENDING_GREETING_HOUR = 13;
 
-type CustomFindOptionsWhere<T> = FindOptionsWhere<T> & { where: any };
-
-export class Greeting {
+export class GreetingService {
 	protected userRepository: UserRepository;
 	protected greetingRepository: GreetingRepository;
+	protected logger: ILogger;
 
 	constructor(
 		userRepository: UserRepository,
-		greetingRepository: GreetingRepository
+		greetingRepository: GreetingRepository,
+		logger?: ILogger
 	) {
 		this.userRepository = userRepository;
 		this.greetingRepository = greetingRepository;
@@ -37,16 +38,13 @@ export class Greeting {
 
 		// Execute promises in parallel
 		try {
-			const results = await Promise.all(sendBulkPromise);
-			console.log('All promises resolved:', results);
+			await Promise.all(sendBulkPromise);
 		} catch (error) {
-			console.error('At least one promise rejected:', error);
+			throw new Error('Failed to send bulk Birthday Email');
 		}
 
 		return await Promise.all(sendBulkPromise);
 	}
-
-	public async selfCheckPendingFailGreeting() {}
 
 	private _calculateUserTimeZone(user: User): any {
 		const now = new Date(); // Get the current date/time in local timezone
@@ -87,6 +85,19 @@ export class Greeting {
 				sendGreeting: false,
 			};
 		}
+	}
+
+	public async automatePendingGreeting() {
+		this.logger.info('Automate pending greeting message. . .');
+		let greetings = await this.greetingRepository.findMany({
+			where: { status: Not(GreetingStatus.SUCCESS) },
+		});
+		for (const greeting of greetings) {
+			const user = greeting.user;
+			const userTimeZoneDate = this._calculateUserTimeZone(user);
+			await this._sendMail(user, userTimeZoneDate);
+		}
+		this.logger.info('Automate successful');
 	}
 
 	private async _sendMail(user: User, userTimezoneDate: Date) {
